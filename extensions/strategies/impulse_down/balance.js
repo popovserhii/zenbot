@@ -69,7 +69,7 @@ class Balance {
 
     // Update balance
     this.balance.asset = n(this.balance.asset).subtract(size).value();
-    this.balance.currency = n(this.balance.currency).add(total).subtract(fee).value()
+    this.balance.currency = n(this.balance.currency).add(total).subtract(fee).value();
   }
 
   getSizeOfCoinsToBuy(price, buyPct) {

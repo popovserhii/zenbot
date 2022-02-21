@@ -15,11 +15,27 @@ const PRICE_NOISE = 0.002; // 0.002 * 100 = 0.2%
 /**
  * Number equivalent of percent of price falling
  *
+ * SHIB:
+ * IMPULSE_DOWN = [-0.015, -0.02]
+ * PRICE_RISE = 0.01
+ *
+ * DOGE:
+ * IMPULSE_DOWN = [-0.008, -0.025]
+ * PRICE_RISE = 0.005
+ *
+ * BTC:
+ * IMPULSE_DOWN = [-0.006, -0.017]
+ * PRICE_RISE = 0.004
+ *
+ * ETH:
+ * IMPULSE_DOWN = [-0.006, -0.1]
+ * PRICE_RISE = 0.003
+ *
  */
-const IMPULSE_DOWN = [-0.015, -0.02]; // -0.02 * 100 = -2%
+const IMPULSE_DOWN = [-0.008, -0.025]; // -0.02 * 100 = -2%
 
 
-const PRICE_RISE = 0.01; // 0.005 * 100 = 0.5%
+const PRICE_RISE = 0.005; // 0.005 * 100 = 0.5%
 
 class Analyzer {
 

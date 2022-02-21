@@ -19,7 +19,7 @@ class DocService {
    * This code isn't a part of this service and should be initialized on the project bootstrap,
    * but for simplification I put it here.
    */
-  async init(mongo) {
+  /*async init(mongo) {
     if (!this.mongo) {
       this.mongo = mongo;
     }
@@ -31,8 +31,8 @@ class DocService {
         sequence: 0
       });
     }
-  }
-/*
+  }*/
+
   async init(mongo) {
     if (!this.mongo) {
       this.mongo = mongo;
@@ -49,7 +49,6 @@ class DocService {
       }
     })
   }
-*/
 
   getCounters() {
     return this.mongo.collection('counters');
