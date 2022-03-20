@@ -11,7 +11,7 @@ services:
     restart: always
     tty: true
     ports:
-      - "17365:17365"
+      - "${ZENBOT_PORT}:17365"
     depends_on:
       - mongodb
     environment:
@@ -23,7 +23,7 @@ services:
       - ./database:/data/db
     command: mongod --bind_ip=0.0.0.0 --logpath=/dev/null
     ports:
-      - "27017:27017"
+      - "${ZENBOT_MONGO_PORT}:27017"
   # Remove below comments to use this container. "adminMongo is a Web based user interface (GUI) to handle all your MongoDB connections/databases needs."
   #
   #adminmongo:
