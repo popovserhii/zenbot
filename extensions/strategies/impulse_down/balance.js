@@ -9,8 +9,21 @@ class Balance {
     this._fee = fee;
   }
 
+  set currency(value) {
+    this.balance.currency = value;
+
+    return this;
+  }
+
   get currency() {
+    // Here we need to operate with real s.balance.currency
     return this.balance.currency;
+  }
+
+  set asset(value) {
+    this.balance.asset = value;
+
+    return this;
   }
 
   get asset() {
@@ -21,15 +34,17 @@ class Balance {
     return this._fee;
   }
 
-  get isInit() {
+  isInit() {
     return !!this.balance;
   }
 
   init(balance, options, fee) {
-    if (!this.isInit) {
+    if (!this.isInit()) {
       this.balance = balance;
       this.options = options;
       this._fee = fee;
+
+      //console.log('\nInit balance: ', this.balance);
     }
 
     return this;
@@ -55,7 +70,7 @@ class Balance {
     return this;
   }
 
-  sellFor(price, pct) {
+  sellFor(price, pct, s) {
     let so = this.options;
     let size = n(this.balance.asset).divide(100).multiply(pct).format(this.assetIncrement ? this.assetIncrement : '0.00000000');
 
@@ -67,12 +82,16 @@ class Balance {
     let total = n(price).multiply(size);
     let fee = this.computeFee(total);
 
+    if (isNaN(parseFloat(this.balance.asset))) {
+      console.log('\n', this.balance, s);
+    }
+
     // Update balance
     this.balance.asset = n(this.balance.asset).subtract(size).value();
     this.balance.currency = n(this.balance.currency).add(total).subtract(fee).value();
   }
 
-  getSizeOfCoinsToBuy(price, buyPct) {
+  getSizeOfCoinsToBuy(price, buyPct, s) {
     let tradeBalance = n(this.balance.currency).divide(100).multiply(buyPct);
     let tradableBalance = n(this.balance.currency).divide(100 + this.fee).multiply(buyPct);
     //let expectedFee = n(tradeBalance).subtract(tradableBalance).format('0.00000000', Math.ceil); // round up as the exchange will too
@@ -88,10 +107,15 @@ class Balance {
     return size;
   }
 
-  buyFor(price, buyPct) {
+  buyFor(price, buyPct, s) {
     //let tradeBalance = n(this.balance.currency).divide(100 + this.fee).multiply(buyPct);
     let tradeBalance = n(this.balance.currency).divide(100).multiply(buyPct);
     let size = this.getSizeOfCoinsToBuy(price, buyPct);
+
+
+    if (isNaN(parseFloat(this.balance.asset))) {
+      console.log('\n', this.balance);
+    }
 
     this.balance.asset = n(this.balance.asset).add(size).value();
     this.balance.currency = n(this.balance.currency).subtract(tradeBalance).value();

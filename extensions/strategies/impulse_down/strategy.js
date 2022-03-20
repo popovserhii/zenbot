@@ -37,21 +37,45 @@ module.exports = {
    */
   getOptions: async function (s) {
 
-    console.log('pct change strategy 2020-08-05 - GONNA MAKE U RICH BABY!')
+    console.log('Impulse Down strategy 2022-02-22 - GONNA MAKE U RICH BABY!')
 
     /* Universal */
     this.option('period', 'period length, same as --period_length', String, '1m')
     this.option('period_length', 'period length, same as --period', String, '1m')
     this.option('min_periods', 'min. history periods', Number, 400)
-    /* Strategy */
-    this.option('pct_sell', 'factor e.g 1.05 when price has risen 5% from min', Number, 1.05)
-    this.option('pct_buy', 'factor, e.g 0.95 when price has fallen 5% from max', Number, 0.95)
-    this.option('timeframe_periods', 'no. of lookback periods', Number, 200)
+    //this.option('currency_capital', 'amount of start capital in currency', Number, 1000)
+    this.option('deposit', 'amount of start capital in currency', Number, 1000)
 
-    // This should be somewhere in DI, but we don't have DI at this time
-    await orderService.init(s.conf.db.mongo);
-    await impulseService.init(s.conf.db.mongo);
-    balance.init({...s.balance}, s.options, (s.exchange.makerFee || s.exchange.takerFee));
+    /* Strategy */
+    //this.option('pct_sell', 'factor e.g 1.05 when price has risen 5% from min', Number, 1.05)
+    //this.option('pct_buy', 'factor, e.g 0.95 when price has fallen 5% from max', Number, 0.95)
+    //this.option('timeframe_periods', 'no. of lookback periods', Number, 30)
+    this.option('fixed_size', 'buy/sell with fixed currency size', Number, 50)
+    this.option('timeframe_periods', 'historical (lookback) period in mins the strategy to work with', Number, 30)
+    this.option('impulse', 'percent of price decreasing', Array, [-2, -1.5])
+    this.option('price_noise', 'ignore price increasing at percent after impulse down and before buying', Number, 0.2)
+    this.option('price_rise', 'percent of price rising', Number, 1)
+    this.option('port', 'API port', Number, 17365)
+
+    s.conf.output.api.port = s.options.port;
+
+    // The code below should be somewhere in DI, but we don't have DI at this moment
+    //balance.init({ ...s.balance }, s.options, (s.exchange.makerFee || s.exchange.takerFee));
+    balance.init({ currency: 0, asset: 0 }, s.options, (s.exchange.makerFee || s.exchange.takerFee));
+
+    // Unrelated code should not have to wait. @see https://dev.to/christopherkade/the-dangers-of-async-await-3p5g
+    await Promise.all([
+      orderService.init(s.conf.db.mongo),
+      impulseService.init(s.conf.db.mongo)
+    ]);
+
+    // Balance actualization is actual only in sim mode,
+    // because in trade mode the balance synchronize automatically at extensions/exchanges/binance/exchange.js:112
+    if (s.options.mode === 'sim') {
+      balance.asset = 0;
+      balance.currency = s.options.deposit;
+      await analyzer.actualizeBalance(s.options.selector.normalized);
+    }
   },
 
   /**
@@ -85,45 +109,63 @@ module.exports = {
    */
   onPeriod: async function (s, cb) {
     // @todo determine periods automatically according to --period
+    // if --period=5m then periods has to be 6
     // if --period=2m then periods has to be 15
     // if --period=1m then periods has to be 30
-    let periods = 30;
+    //let periods = 30;
+    let periods = s.options.timeframe_periods / parseFloat(s.options.period);
     let closes = analyzer.lookbackRangeFor(s.lookback, periods);
 
-    s.period.min = Math.min(...closes);
-    s.period.max = Math.max(...closes);
+    //s.period.min = Math.min(...closes);
+    //s.period.max = Math.max(...closes);
 
+    s.period.min = closes[0];
+    s.period.max = closes[0];
+
+    for (let i = 1, len = closes.length; i < len; i++) {
+      let v = closes[i];
+      s.period.min = (v < s.period.min) ? v : s.period.min;
+      s.period.max = (v > s.period.max) ? v : s.period.max;
+    }
+
+    // It's important to have actual balance here, because it syncs with original crypto exchanger,
+    // otherwise we will get the wrong calculation here lib/engine.js:417
+    if (s.options.mode === 'trade') {
+      balance.currency = s.balance.currency;
+      balance.asset = s.balance.asset;
+    }
 
     // CALCULATE BUY SELL TRIGGER
-
     let impulse = analyzer.impulseBought ? { ...analyzer.impulseBought } : null;
 
     // BUY && SELL
-    s.signal = null
+    s.signal = null;
     if (analyzer.canSell(s)) {
       // Sell Signal
       s.signal = 'sell';
       s.options.sell_pct = analyzer.getPercentToSell(impulse);
+      //s.options.sell_pct = analyzer.getPercentToSell({size: 173});
 
-      analyzer.balance.sellFor(s.period.close, s.options.sell_pct);
+      analyzer.balance.sellFor(s.period.close, s.options.sell_pct, s);
       analyzer.logToSell(impulse, s);
 
     } else if (await analyzer.canSellDeferred(s)) {
       let deferredImpulse = await analyzer.getSellDeferred(s);
-      analyzer.terminator.updatePeriod(deferredImpulse, { sold: true });
+
       // Sell Signal
       s.signal = 'sell';
       s.options.sell_pct = analyzer.getPercentToSell(deferredImpulse);
 
-      analyzer.balance.sellFor(s.period.close, s.options.sell_pct);
+      analyzer.balance.sellFor(s.period.close, s.options.sell_pct, s);
       analyzer.logToSell(deferredImpulse, s);
-
+      analyzer.terminator.updatePeriod(deferredImpulse, { sold: true });
     } else if (analyzer.canBuy(s)) { // 0.18 <=  0.22 * 0.97
       // Buy Signal
       s.signal = 'buy';
-      s.options.buy_pct = analyzer.getPercentToBuy(s.balance.currency);
+      // Don't change s.balance.currency to any new value. Here we correct value in 'trade' mode
+      s.options.buy_pct = analyzer.getPercentToBuy();
 
-      analyzer.balance.buyFor(s.period.close, s.options.buy_pct);
+      analyzer.balance.buyFor(s.period.close, s.options.buy_pct, s);
       await analyzer.logToBuy(s);
     }
 
@@ -201,8 +243,8 @@ module.exports = {
     period_length: Phenotypes.ListOption(['20s', '30s', '40s', '60s', '90s', '180s', '300s', '10m', '30m', '1h', '2h']),
     min_periods: Phenotypes.Range(1000, 1000),
     timeframe_periods: Phenotypes.Range(50, 700),
-    trail_pct_price: Phenotypes.RangeFactor(0.00, 0.75, 0.05),
-    pct_sell: Phenotypes.RangeFactor(1.00, 1.05, 0.001),
-    pct_buy: Phenotypes.RangeFactor(1.00, 0.95, 0.001),
+    //trail_pct_price: Phenotypes.RangeFactor(0.00, 0.75, 0.05),
+    //pct_sell: Phenotypes.RangeFactor(1.00, 1.05, 0.001),
+    //pct_buy: Phenotypes.RangeFactor(1.00, 0.95, 0.001),
   }
 }

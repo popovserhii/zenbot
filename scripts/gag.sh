@@ -2,6 +2,8 @@
 
 #apk add --update npm git python make g++ util-linux
 
+#npm rebuild node-sass
+
 # https://unix.stackexchange.com/a/332658/378971
 #ln -s /usr/local/bin/python3.6 /usr/local/bin/python3
 

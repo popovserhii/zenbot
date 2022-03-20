@@ -57,7 +57,7 @@ module.exports = function (program, conf) {
     .option('--min_prev_trades <number>', 'minimum number of previous trades to load if use_prev_trades is enabled, set to 0 to disable and use trade time instead', Number, conf.min_prev_trades)
     .option('--disable_stats', 'disable printing order stats')
     .option('--reset_profit', 'start new profit calculation from 0')
-    .option('--use_fee_asset', 'Using separated asset to pay for fees. Such as binance\'s BNB or Huobi\'s HT', Boolean, false)
+    .option('--use_fee_asset', 'Using separated asset to pay for fees. Such as binance\'s BNB or Huobi\'s HT', Boolean, conf.use_fee_asset)
     .option('--run_for <minutes>', 'Execute for a period of minutes then exit with status 0', String, null)
     .option('--interval_trade <minutes>', 'The interval trade time', Number, conf.interval_trade)
     .option('--quarentine_time <minutes>', 'For loss trade, set quarentine time for cancel buys', Number, conf.quarentine_time)
@@ -180,7 +180,6 @@ module.exports = function (program, conf) {
         var buy_hold = s.start_price ? n(s.period.close).multiply(n(s.start_capital).divide(s.start_price)) : n(tmp_balance)
         var buy_hold_profit = s.start_capital ? n(buy_hold).subtract(s.start_capital).divide(s.start_capital) : n(0)
         if (!statsonly) {
-          console.log()
           var output_lines = []
           output_lines.push('Strategy: ' + so.strategy)
           output_lines.push('Last balance: ' + n(tmp_balance).format('0.00000000').yellow + ' (' + profit.format('0.00%') + ')')
