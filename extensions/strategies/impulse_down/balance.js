@@ -9,15 +9,15 @@ class Balance {
     this._fee = fee;
   }
 
-  set currency(value) {
-    this.balance.currency = value;
+  set deposit(value) {
+    this.balance.deposit = value;
 
     return this;
   }
 
-  get currency() {
+  get deposit() {
     // Here we need to operate with real s.balance.currency
-    return this.balance.currency;
+    return this.balance.deposit;
   }
 
   set asset(value) {
@@ -88,12 +88,12 @@ class Balance {
 
     // Update balance
     this.balance.asset = n(this.balance.asset).subtract(size).value();
-    this.balance.currency = n(this.balance.currency).add(total).subtract(fee).value();
+    this.balance.deposit = n(this.balance.deposit).add(total).subtract(fee).value();
   }
 
   getSizeOfCoinsToBuy(price, buyPct, s) {
-    let tradeBalance = n(this.balance.currency).divide(100).multiply(buyPct);
-    let tradableBalance = n(this.balance.currency).divide(100 + this.fee).multiply(buyPct);
+    let tradeBalance = n(this.balance.deposit).divide(100).multiply(buyPct);
+    let tradableBalance = n(this.balance.deposit).divide(100 + this.fee).multiply(buyPct);
     //let expectedFee = n(tradeBalance).subtract(tradableBalance).format('0.00000000', Math.ceil); // round up as the exchange will too
     let expectedFee = n(tradeBalance).subtract(tradableBalance);
 
@@ -109,7 +109,7 @@ class Balance {
 
   buyFor(price, buyPct, s) {
     //let tradeBalance = n(this.balance.currency).divide(100 + this.fee).multiply(buyPct);
-    let tradeBalance = n(this.balance.currency).divide(100).multiply(buyPct);
+    let tradeBalance = n(this.balance.deposit).divide(100).multiply(buyPct);
     let size = this.getSizeOfCoinsToBuy(price, buyPct);
 
 
@@ -118,7 +118,7 @@ class Balance {
     }
 
     this.balance.asset = n(this.balance.asset).add(size).value();
-    this.balance.currency = n(this.balance.currency).subtract(tradeBalance).value();
+    this.balance.deposit = n(this.balance.deposit).subtract(tradeBalance).value();
   }
 }
 

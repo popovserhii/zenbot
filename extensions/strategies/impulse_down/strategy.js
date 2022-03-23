@@ -73,7 +73,9 @@ module.exports = {
     // because in trade mode the balance synchronize automatically at extensions/exchanges/binance/exchange.js:112
     if (s.options.mode === 'sim') {
       balance.asset = 0;
-      balance.currency = s.options.deposit;
+      // total sum of available USDT
+      //balance.currency = s.options.deposit;
+      balance.deposit = s.options.deposit;
       await analyzer.actualizeBalance(s.options.selector.normalized);
     }
   },
@@ -131,7 +133,8 @@ module.exports = {
     // It's important to have actual balance here, because it syncs with original crypto exchanger,
     // otherwise we will get the wrong calculation here lib/engine.js:417
     if (s.options.mode === 'live') {
-      balance.currency = s.balance.currency;
+      //balance.deposit = s.balance.deposit;
+      balance.deposit = s.balance.deposit;
       balance.asset = s.balance.asset;
     }
 

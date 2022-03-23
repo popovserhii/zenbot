@@ -127,7 +127,7 @@ class Analyzer {
     for (const trade of trades) {
       let total = n(trade.close).multiply(trade.size);
       this.balance.asset = n(this.balance.asset).add(trade.size).value();
-      this.balance.currency = this.balance.currency - n(total).add(this.balance.computeFee(total)).value();
+      this.balance.deposit = this.balance.deposit - n(total).add(this.balance.computeFee(total)).value();
     }
   }
 
@@ -280,7 +280,7 @@ class Analyzer {
     //console.log(`\nBROUGHT: ${this.impulse.bought.close} | BOOL: ${this.impulse.bought}. We mustn't come here twice`);
     console.log(`\nBUY #${numberOfImpulse} at price: ${s.period.close} | LOW: ${this.impulse.lowest.close} | MAX: ${s.period.max} | ImpulseDown: ${(impulseDown).toFixed(3)} | ImpulseDown %: ${(impulseDown * 100).toFixed(2)}% | BUY AT: ${new Date(s.period.close_time).toISOString()}`);
     console.log(`CLOSE: ${s.period.close} | MIN: ${s.period.min} | MAX: ${s.period.max} | LOW: ${s.period.low} | HIGH: ${s.period.high}`);
-    console.log(`RISING %: ${risingPercent.toFixed(2)} | $: ${this.balance.currency} | COINS: ${this.balance.asset}`);
+    console.log(`RISING %: ${risingPercent.toFixed(2)} | $: ${this.balance.deposit} | COINS: ${this.balance.asset}`);
   }
 
   canBuy(s) {
@@ -306,7 +306,7 @@ class Analyzer {
     let profit = ((s.period.close - impulse.close) / impulse.close);
     console.log(`\nSOLD at price: ${s.period.close} | BOUGHT: ${impulse.close} | Profit: ${(profit).toFixed(4)} | Profit %: ${(profit * 100).toFixed(2)}% | SELL AT:${new Date(s.period.close_time).toISOString()}`);
     console.log(`CLOSE: ${s.period.close} | MIN: ${s.period.min} | MAX: ${s.period.max} | LOW: ${s.period.low} | HIGH: ${s.period.high}`);
-    console.log(`RISING %: ${risingPercent.toFixed(2)} | $: ${this.balance.currency} | COINS: ${this.balance.asset}`);
+    console.log(`RISING %: ${risingPercent.toFixed(2)} | $: ${this.balance.deposit} | COINS: ${this.balance.asset}`);
   }
 
   canSell(s) {
@@ -372,7 +372,7 @@ class Analyzer {
     // @todo: Get fixed value from options
     //let fixed = 50; // every time buy at the same price 50$
     let fixed = this.balance.options.fixed_size; // every time buy at the same price 50$
-    return this.percentageOfNumber(fixed, this.balance.currency);
+    return this.percentageOfNumber(fixed, this.balance.deposit);
   }
 
   getPercentToSell(period) {
