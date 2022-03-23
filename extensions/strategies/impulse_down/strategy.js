@@ -130,7 +130,7 @@ module.exports = {
 
     // It's important to have actual balance here, because it syncs with original crypto exchanger,
     // otherwise we will get the wrong calculation here lib/engine.js:417
-    if (s.options.mode === 'trade') {
+    if (s.options.mode === 'live') {
       balance.currency = s.balance.currency;
       balance.asset = s.balance.asset;
     }

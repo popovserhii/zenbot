@@ -1,11 +1,13 @@
 FROM node:17 as builder
 ADD . /app
 WORKDIR /app
+RUN apk add --update screen
 RUN npm install -g node-gyp
 RUN npm install --unsafe
 
 FROM node:17-alpine
 
+COPY .screenrc /root/.screenrc
 COPY zenbot.sh /usr/local/bin/zenbot
 
 WORKDIR /app
