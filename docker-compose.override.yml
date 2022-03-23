@@ -10,5 +10,5 @@ services:
     volumes:
       - ./:/app/
     ports:
-      - "17365:17365"
-      - "9229:9229"
+      - "${ZENBOT_PORT_OUT}:17365"
+      #- "9229:9229"

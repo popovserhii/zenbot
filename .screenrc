@@ -1,11 +1,11 @@
 chdir /app
 sessionname zenbot
-#screen -t DOGE-USDT 1 node zenbot.js trade binance.DOGE-USDT --period=2m --timeframe_periods=30 --fixed_size=20 --deposit=400 --impulse=-2.5 --impulse=-0.8 --price_noise=0.2 --price_rise=0.5 --min_prev_trades=60 --port=17366
-screen -t SOL-USDT 2 node zenbot.js trade binance.SOL-USDT --period=2m --timeframe_periods=30 --fixed_size=20 --deposit=220 --impulse=-2.5 --impulse=-0.8 --price_noise=0.2 --price_rise=0.6 --port=17367
-screen -t LUNA-USDT 3 node zenbot.js trade binance.LUNA-USDT --period=2m --timeframe_periods=60 --fixed_size=20 --deposit=220 --impulse=-2.5 --impulse=-1 --price_noise=0.2 --price_rise=0.8 --port=17368
-screen -t AVAX-USDT 4 node zenbot.js trade binance.AVAX-USDT --period=2m --timeframe_periods=60 --fixed_size=20 --deposit=220 --impulse=-2.3 --impulse=-1.5 --price_noise=0.2 --price_rise=1 --port=17369
-screen -t SHIB-USDT 5 node zenbot.js trade binance.SHIB-USDT --period=2m --timeframe_periods=60 --fixed_size=20 --deposit=300 --impulse=-2 --impulse=-1.5 --price_noise=0.2 --price_rise=1 --port=17370
-screen -t ADA-USDT 6 node zenbot.js trade binance.ADA-USDT --period=2m --timeframe_periods=30 --fixed_size=20 --deposit=300 --impulse=-1.8 --impulse=-0.9 --price_noise=0.2 --price_rise=0.6 --port=17371
+screen -t DOGE-USDT 1 node zenbot.js trade binance.DOGE-USDT --period=2m --timeframe_periods=30 --fixed_size=20 --deposit=400 --impulse=-2.5 --impulse=-0.8 --price_noise=0.2 --price_rise=0.5 --min_prev_trades=60 --port=17366 --debug
+screen -t SOL-USDT 2 node zenbot.js trade binance.SOL-USDT --period=2m --timeframe_periods=30 --fixed_size=20 --deposit=220 --impulse=-2.5 --impulse=-0.8 --price_noise=0.2 --price_rise=0.6 --port=17367 --debug
+screen -t LUNA-USDT 3 node zenbot.js trade binance.LUNA-USDT --period=2m --timeframe_periods=60 --fixed_size=20 --deposit=220 --impulse=-2.5 --impulse=-1 --price_noise=0.2 --price_rise=0.8 --port=17368 --debug
+screen -t AVAX-USDT 4 node zenbot.js trade binance.AVAX-USDT --period=2m --timeframe_periods=60 --fixed_size=20 --deposit=220 --impulse=-2.3 --impulse=-1.5 --price_noise=0.2 --price_rise=1 --port=17369 --debug
+screen -t SHIB-USDT 5 node zenbot.js trade binance.SHIB-USDT --period=2m --timeframe_periods=60 --fixed_size=20 --deposit=300 --impulse=-2 --impulse=-1.5 --price_noise=0.2 --price_rise=1 --port=17370 --debug
+screen -t ADA-USDT 6 node zenbot.js trade binance.ADA-USDT --period=2m --timeframe_periods=30 --fixed_size=20 --deposit=300 --impulse=-1.8 --impulse=-0.9 --price_noise=0.2 --price_rise=0.6 --port=17371 --debug
 
 
 
