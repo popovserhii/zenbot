@@ -44,7 +44,7 @@ module.exports = {
     this.option('period_length', 'period length, same as --period', String, '1m')
     this.option('min_periods', 'min. history periods', Number, 400)
     //this.option('currency_capital', 'amount of start capital in currency', Number, 1000)
-    this.option('deposit', 'amount of start capital in currency', Number, 1000)
+    //this.option('deposit', 'amount of start capital in currency', Number, 1000)
 
     /* Strategy */
     //this.option('pct_sell', 'factor e.g 1.05 when price has risen 5% from min', Number, 1.05)
@@ -55,9 +55,10 @@ module.exports = {
     this.option('impulse', 'percent of price decreasing', Array, [-2, -1.5])
     this.option('price_noise', 'ignore price increasing at percent after impulse down and before buying', Number, 0.2)
     this.option('price_rise', 'percent of price rising', Number, 1)
-    this.option('port', 'API port', Number, 17365)
 
-    s.conf.output.api.port = s.options.port;
+    // @todo I disabled it due to its unnecessarity.
+    //this.option('port', 'API port', Number, 17365)
+    //s.conf.output.api.port = s.options.port;
 
     // The code below should be somewhere in DI, but we don't have DI at this moment
     //balance.init({ ...s.balance }, s.options, (s.exchange.makerFee || s.exchange.takerFee));
