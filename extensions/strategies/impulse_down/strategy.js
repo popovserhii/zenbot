@@ -44,7 +44,7 @@ module.exports = {
     this.option('period_length', 'period length, same as --period', String, '1m')
     this.option('min_periods', 'min. history periods', Number, 400)
     //this.option('currency_capital', 'amount of start capital in currency', Number, 1000)
-    this.option('deposit', 'amount of start capital in currency', Number, 1000)
+    //this.option('deposit', 'amount of start capital in currency', Number, 1000)
 
     /* Strategy */
     //this.option('pct_sell', 'factor e.g 1.05 when price has risen 5% from min', Number, 1.05)
