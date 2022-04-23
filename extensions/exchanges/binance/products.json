@@ -22075,5 +22075,104 @@
     "increment": "0.10000000",
     "asset_increment": "0.00100000",
     "label": "WAVES/TRY"
+  },
+  {
+    "id": "BTCUST",
+    "asset": "BTC",
+    "currency": "UST",
+    "min_size": "0.00001000",
+    "max_size": "9000.00000000",
+    "min_total": "10.00000000",
+    "increment": "0.01000000",
+    "asset_increment": "0.00001000",
+    "label": "BTC/UST"
+  },
+  {
+    "id": "ASTRBTC",
+    "asset": "ASTR",
+    "currency": "BTC",
+    "min_size": "0.10000000",
+    "max_size": "92141578.00000000",
+    "min_total": "0.00010000",
+    "increment": "0.00000001",
+    "asset_increment": "0.10000000",
+    "label": "ASTR/BTC"
+  },
+  {
+    "id": "ASTRETH",
+    "asset": "ASTR",
+    "currency": "ETH",
+    "min_size": "0.10000000",
+    "max_size": "92141578.00000000",
+    "min_total": "0.00500000",
+    "increment": "0.00000001",
+    "asset_increment": "0.10000000",
+    "label": "ASTR/ETH"
+  },
+  {
+    "id": "BSWTRY",
+    "asset": "BSW",
+    "currency": "TRY",
+    "min_size": "0.01000000",
+    "max_size": "9222449.00000000",
+    "min_total": "10.00000000",
+    "increment": "0.01000000",
+    "asset_increment": "0.01000000",
+    "label": "BSW/TRY"
+  },
+  {
+    "id": "FTTETH",
+    "asset": "FTT",
+    "currency": "ETH",
+    "min_size": "0.00100000",
+    "max_size": "92141578.00000000",
+    "min_total": "0.00500000",
+    "increment": "0.00001000",
+    "asset_increment": "0.00100000",
+    "label": "FTT/ETH"
+  },
+  {
+    "id": "FUNBNB",
+    "asset": "FUN",
+    "currency": "BNB",
+    "min_size": "1.00000000",
+    "max_size": "92141578.00000000",
+    "min_total": "0.05000000",
+    "increment": "0.00000001",
+    "asset_increment": "1.00000000",
+    "label": "FUN/BNB"
+  },
+  {
+    "id": "PORTOBUSD",
+    "asset": "PORTO",
+    "currency": "BUSD",
+    "min_size": "0.01000000",
+    "max_size": "92141578.00000000",
+    "min_total": "10.00000000",
+    "increment": "0.00010000",
+    "asset_increment": "0.01000000",
+    "label": "PORTO/BUSD"
+  },
+  {
+    "id": "STEEMUSDT",
+    "asset": "STEEM",
+    "currency": "USDT",
+    "min_size": "0.10000000",
+    "max_size": "92141578.00000000",
+    "min_total": "10.00000000",
+    "increment": "0.00010000",
+    "asset_increment": "0.10000000",
+    "label": "STEEM/USDT"
+  },
+  {
+    "id": "ZILEUR",
+    "asset": "ZIL",
+    "currency": "EUR",
+    "min_size": "0.10000000",
+    "max_size": "9000000.00000000",
+    "min_total": "10.00000000",
+    "increment": "0.00001000",
+    "asset_increment": "0.10000000",
+    "label": "ZIL/EUR"
   }
 ]
