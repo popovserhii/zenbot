@@ -46,6 +46,7 @@ class Analyzer {
     this.terminator = terminator;
     this.impulse = null;
     this.impulseBought = null;
+    this.lowest = 0;
   }
 
   get impulseRangePrt() {
@@ -303,10 +304,11 @@ class Analyzer {
   logToSell(impulse, s) {
     let risingPercent = this.percentageDiff(impulse.close, s.period.close);
 
+    this.lowest = (this.lowest == 0 || this.lowest > this.balance.deposit) ? this.balance.deposit : this.lowest;
     let profit = ((s.period.close - impulse.close) / impulse.close);
     console.log(`\nSOLD at price: ${s.period.close} | BOUGHT: ${impulse.close} | Profit: ${(profit).toFixed(4)} | Profit %: ${(profit * 100).toFixed(2)}% | SELL AT:${new Date(s.period.close_time).toISOString()}`);
     console.log(`CLOSE: ${s.period.close} | MIN: ${s.period.min} | MAX: ${s.period.max} | LOW: ${s.period.low} | HIGH: ${s.period.high}`);
-    console.log(`RISING %: ${risingPercent.toFixed(2)} | $: ${this.balance.deposit} | COINS: ${this.balance.asset}`);
+    console.log(`RISING %: ${risingPercent.toFixed(2)} | $: ${this.balance.deposit} | COINS: ${this.balance.asset} | LOWEST: ${this.lowest}`);
   }
 
   canSell(s) {
@@ -353,8 +355,8 @@ class Analyzer {
       switch (true) {
         case ((daysDiff <= 7) && pctDiff >= 0.5): // difference 7 days, price increased up to 0.5%
         case ((daysDiff <= (7 * 2)) && pctDiff >= 1): // difference 2 weeks, price increased up to 1%
-        case ((daysDiff <= (7 * 4)) && pctDiff >= 15): // difference 4 weeks, price increased up to 15%
-        case ((daysDiff >= (7 * 4)) && pctDiff >= 20): // difference 4+ weeks, price increased up to 20%
+        case ((daysDiff <= (7 * 48)) && pctDiff >= 5): // difference 48 weeks, price increased up to 15%
+        case ((daysDiff >= (7 * 48)) && pctDiff >= 10): // difference 48+ weeks, price increased up to 20%
           deferred = trade;
           break;
       }
