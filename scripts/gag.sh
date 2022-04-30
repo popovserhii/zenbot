@@ -1,7 +1,8 @@
 #!/bin/sh
 
-apk add --update screen
+##apk add --update screen
 #apk add --update npm git python make g++ util-linux
+apk add --update npm git python3 make g++ util-linux screen openssh
 
 #npm rebuild node-sass
 

@@ -4,6 +4,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - PUID=${PUID}
+        - PGID=${PGID}
+        - USER=${USER}
     image: deviavir/zenbot:unstable
     volumes:
       - ./simulations/:/app/simulations/

@@ -2,13 +2,14 @@ version: "3.1"
 
 services:
   server:
-    user: root
+    user: popov
     env_file:
       - .env
       #- .env.local
     entrypoint: ['/bin/sh', '-c', "./scripts/gag.sh" ]
     volumes:
       - ./:/app/
+      - /home/${USER}:/home/${USER}
     ports:
       - "${ZENBOT_PORT_OUT}:17365"
       #- "9229:9229"
