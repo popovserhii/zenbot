@@ -2,7 +2,7 @@ version: "3.1"
 
 services:
   server:
-    user: popov
+    user: root
     env_file:
       - .env
       #- .env.local
@@ -12,4 +12,4 @@ services:
       - /home/${USER}:/home/${USER}
     ports:
       - "${ZENBOT_PORT_OUT}:17365"
-      #- "9229:9229"
+      - "9229:9229"

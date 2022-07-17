@@ -18,7 +18,7 @@ class Terminator {
   async addPeriod(period) {
     period.sold = false
     period.close_datetime = new Date(period.close_time).toISOString();
-    this._deferred.push(period);
+    this._deferred.unshift(period);
     await this._impulseService.insert(period);
 
     return this;

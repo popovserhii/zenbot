@@ -216,7 +216,7 @@ class Analyzer {
         // Or if simplify we must not be in the same price range as the last purchase.
         // The third conditions determines if price has been starting recovering.
 
-        this.terminator.addPeriod({...this.impulseBought});
+        //this.terminator.addPeriod({...this.impulseBought});
         // 2nd or 3rd or etc. Impulse finished
         this.impulseBought = {...s.period};
 
@@ -336,7 +336,16 @@ class Analyzer {
   }
 
   async canSellDeferred(s) {
-    return await this.getSellDeferred(s);
+    let deferredImpulse = await this.getSellDeferred(s);
+    if (deferredImpulse) {
+      // Remove last bought impulse since we're going to sell it.
+      if (this.impulseBought && this.impulseBought.time === deferredImpulse.time) {
+        this.impulse = null;
+        this.impulseBought = null;
+      }
+
+      return deferredImpulse;
+    }
   }
 
   async getSellDeferred(s) {
@@ -353,7 +362,7 @@ class Analyzer {
       let daysDiff = this.daysDiff(trade.close_time, s.period.close_time);
 
       switch (true) {
-        case ((daysDiff <= 7) && pctDiff >= 0.5): // difference 7 days, price increased up to 0.5%
+        case ((daysDiff <= 7) && pctDiff > this.priceRisePrt): // difference 7 days, price increased up to 0.5%
         case ((daysDiff <= (7 * 2)) && pctDiff >= 1): // difference 2 weeks, price increased up to 1%
         case ((daysDiff <= (7 * 48)) && pctDiff >= 5): // difference 48 weeks, price increased up to 15%
         case ((daysDiff >= (7 * 48)) && pctDiff >= 10): // difference 48+ weeks, price increased up to 20%
@@ -371,16 +380,35 @@ class Analyzer {
   }
 
   getPercentToBuy() {
-    // @todo: Get fixed value from options
-    //let fixed = 50; // every time buy at the same price 50$
-    let fixed = this.balance.options.fixed_size; // every time buy at the same price 50$
+    //let fixed = this.balance.options.fixed_size; // every time buy at the same price 50$
+    //return this.percentageOfNumber(fixed, this.balance.deposit);
+
+
+    //let asset_qty = this.balance.options.fixed_size;
+    // retrieve these data automatically
+    let fixed = 11;
+    let assetQty = 25;
+    //let fixedRate = 100;
+    //let asset = assetQty * fixedRate;
+    //let basicBalance = asset + (asset * 0.2) // 0.2 means 20%
+
+    if (assetQty * fixed < this.balance.deposit) {
+      fixed = (this.balance.deposit / assetQty).toFixed(2);
+    }
+
+    //let fixed = this.balance.options.fixed_size; // every time buy at the same price 50$
     return this.percentageOfNumber(fixed, this.balance.deposit);
   }
 
   getPercentToSell(period) {
     //return this.percentageOfNumber(period.size - ((period.size / 100) * 0.1), this.balance.asset);
     //return this.percentageOfNumber(period.size - this.balance.computeFee(period.size), this.balance.asset);
-    return this.percentageOfNumber(period.size, this.balance.asset);
+    let pct = this.percentageOfNumber(period.size, this.balance.asset);
+    if (/*pct < 0 || */pct > 100) {
+      pct = 100;
+    }
+
+    return pct;
   }
 
 }

@@ -1,11 +1,10 @@
 chdir /app
 deflogin off
 sessionname zenbot
-screen -t DOGE-USDT 1 node zenbot.js trade binance.DOGE-USDT --period=2m --timeframe_periods=30 --fixed_size=20 --impulse=-2.5 --impulse=-0.8 --price_noise=0.2 --price_rise=0.5 --min_prev_trades=60 --max_buy_loss_pct=1000 --port=17366 --debug
-screen -t SOL-USDT 2 node zenbot.js trade binance.SOL-USDT --period=2m --timeframe_periods=30 --fixed_size=20 --impulse=-2.5 --impulse=-0.8 --price_noise=0.2 --price_rise=0.6 --port=17367 --max_buy_loss_pct=1000 --debug
-screen -t LUNA-USDT 3 node zenbot.js trade binance.LUNA-USDT --period=2m --timeframe_periods=30 --fixed_size=200 --impulse=-4 --impulse=-2 --price_noise=0.2 --price_rise=0.6 --port=17368 --max_buy_loss_pct=1000 --debug
+screen -t DOGE-USDT 1 node zenbot.js trade binance.DOGE-USDT --period=2m --timeframe_periods=30 --fixed_size=20 --impulse=-4 --impulse=-2.5 --price_noise=0.2 --price_rise=1.5 --min_prev_trades=60 --max_buy_loss_pct=1000 --port=17366 --debug
+screen -t LUNA-USDT 3 node zenbot.js trade binance.LUNA-USDT --period=2m --timeframe_periods=30 --fixed_size=100 --impulse=-4 --impulse=-2 --price_noise=0.2 --price_rise=0.6 --port=17368 --max_buy_loss_pct=1000 --debug
 screen -t AVAX-USDT 4 node zenbot.js trade binance.AVAX-USDT --period=2m --timeframe_periods=60 --fixed_size=50 --impulse=-4 --impulse=-2.5 --price_noise=0.2 --price_rise=1 --port=17369 --max_buy_loss_pct=1000 --debug
-screen -t SHIB-USDT 5 node zenbot.js trade binance.SHIB-USDT --period=2m --timeframe_periods=60 --fixed_size=20 --impulse=-2 --impulse=-1.5 --price_noise=0.2 --price_rise=1 --port=17370 --max_buy_loss_pct=1000 --debug
+screen -t SHIB-USDT 5 node zenbot.js trade binance.SHIB-USDT --period=2m --timeframe_periods=60 --fixed_size=20 --impulse=-4 --impulse=-2.5 --price_noise=0.2 --price_rise=1.5 --port=17370 --max_buy_loss_pct=1000 --debug
 screen -t ADA-USDT 6 node zenbot.js trade binance.ADA-USDT --period=2m --timeframe_periods=30 --fixed_size=100 --impulse=-4 --impulse=-2 --price_noise=0.2 --price_rise=0.6 --port=17371 --max_buy_loss_pct=1000 --debug
 screen -t AXS-USDT 7 node zenbot.js trade binance.AXS-USDT --period=2m --timeframe_periods=30 --fixed_size=100 --impulse=-5 --impulse=-2.5 --price_noise=0.2 --price_rise=0.6 --port=17372 --max_buy_loss_pct=1000 --debug
 screen -t NEAR-USDT 8 node zenbot.js trade binance.NEAR-USDT --period=2m --timeframe_periods=30 --fixed_size=100 --impulse=-5 --impulse=-2.5 --price_noise=0.2 --price_rise=0.6 --port=17373 --max_buy_loss_pct=1000 --debug
@@ -17,9 +16,9 @@ screen -t FTT-USDT 13 node zenbot.js trade binance.FTT-USDT --period=2m --timefr
 screen -t ALGO-USDT 14 node zenbot.js trade binance.ALGO-USDT --period=2m --timeframe_periods=30 --fixed_size=100 --impulse=-4 --impulse=-2.5 --price_noise=0.2 --price_rise=0.6 --port=17379 --max_buy_loss_pct=1000 --debug
 screen -t VET-USDT 15 node zenbot.js trade binance.VET-USDT --period=2m --timeframe_periods=30 --fixed_size=100 --impulse=-3 --impulse=-2.5 --price_noise=0.2 --price_rise=0.5 --port=17380 --max_buy_loss_pct=1000 --debug
 screen -t GMT-USDT 16 node zenbot.js trade binance.GMT-USDT --period=2m --timeframe_periods=30 --fixed_size=100 --impulse=-6 --impulse=-4 --price_noise=0.2 --price_rise=1.5 --port=17381 --max_buy_loss_pct=1000 --debug
-screen -t SOL_high-USDT 17 node zenbot.js trade binance.SOL-USDT --period=2m --timeframe_periods=30 --fixed_size=100 --impulse=-4 --impulse=-2.7 --price_noise=0.2 --price_rise=1 --port=17382 --max_buy_loss_pct=1000 --debug
+screen -t SOL-USDT 17 node zenbot.js trade binance.SOL-USDT --period=2m --timeframe_periods=30 --fixed_size=100 --impulse=-4 --impulse=-2.7 --price_noise=0.2 --price_rise=1 --port=17382 --max_buy_loss_pct=1000 --debug
 screen -t MANA-USDT 18 node zenbot.js trade binance.MANA-USDT --period=2m --timeframe_periods=30 --fixed_size=100 --impulse=-4 --impulse=-2.7 --price_noise=0.2 --price_rise=1 --port=17383 --max_buy_loss_pct=1000 --debug
-screen -t HNT-USDT 19 node zenbot.js trade binance.HNT-USDT --period=2m --timeframe_periods=30 --fixed_size=100 --impulse=-5 --impulse=-2.9 --price_noise=0.2 --price_rise=1 --port=17384 --max_buy_loss_pct=1000 --debug
+screen -t HNT-USDT 19 node zenbot.js trade binance.HNT-USDT --period=1m --timeframe_periods=15 --fixed_size=100 --impulse=-5 --impulse=-3 --price_noise=0.2 --price_rise=1.3 --port=17384 --max_buy_loss_pct=1000 --debug
 screen -t NEO-USDT 20 node zenbot.js trade binance.NEO-USDT --period=2m --timeframe_periods=30 --fixed_size=100 --impulse=-4 --impulse=-3 --price_noise=0.2 --price_rise=1 --port=17385 --max_buy_loss_pct=1000 --debug
 screen -t XEC-USDT 21 node zenbot.js trade binance.XEC-USDT --period=2m --timeframe_periods=30 --fixed_size=100 --impulse=-6.5 --impulse=-5.5 --price_noise=0.2 --price_rise=1.2 --port=17386 --max_buy_loss_pct=1000 --debug
 screen -t GRT-USDT 22 node zenbot.js trade binance.GRT-USDT --period=2m --timeframe_periods=30 --fixed_size=100 --impulse=-4.5 --impulse=-3.2 --price_noise=0.2 --price_rise=0.9 --max_buy_loss_pct=1000 --debug

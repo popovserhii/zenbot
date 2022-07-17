@@ -202,6 +202,9 @@ module.exports = function sim (conf, s) {
     let size = Math.min(buy_order.remaining_size, trade.size)
     let price = buy_order.price
 
+    // Format size
+    size = n(n(size).format('0.00000000')).value()
+
     // Add estimated slippage to price
     if (so.order_type === 'maker') {
       price = n(price).add(n(price).multiply(so.avg_slippage_pct / 100)).format('0.00000000')
@@ -241,6 +244,9 @@ module.exports = function sim (conf, s) {
     let fee = 0
     let size = Math.min(sell_order.remaining_size, trade.size)
     let price = sell_order.price
+
+    // Format size
+    size = n(n(size).format('0.00000000')).value()
 
     // Add estimated slippage to price
     if (so.order_type === 'maker') {

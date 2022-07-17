@@ -62,7 +62,7 @@ module.exports = {
 
     // The code below should be somewhere in DI, but we don't have DI at this moment
     //balance.init({ ...s.balance }, s.options, (s.exchange.makerFee || s.exchange.takerFee));
-    balance.init({ currency: 0, asset: 0 }, s.options, (s.exchange.makerFee || s.exchange.takerFee));
+    balance.init({ currency: 0, asset: 0 }, s.options, (s.exchange.makerFee || s.exchange.takerFee), s.product.asset_increment);
 
     // Unrelated code should not have to wait. @see https://dev.to/christopherkade/the-dangers-of-async-await-3p5g
     await Promise.all([
@@ -77,7 +77,11 @@ module.exports = {
       // total sum of available USDT
       //balance.currency = s.options.deposit;
       balance.deposit = s.options.deposit;
-      await analyzer.actualizeBalance(s.options.selector.normalized);
+      //await analyzer.actualizeBalance(s.options.selector.normalized);
+
+      s.asset_capital = s.balance.asset
+      let deposit = s.options.deposit ? Math.max(0, n(s.options.deposit).subtract(s.asset_capital)) : s.balance.currency // zero on negative
+      s.balance.deposit = n(deposit < s.balance.currency ? deposit : s.balance.currency).value()
     }
   },
 
@@ -111,6 +115,8 @@ module.exports = {
    * @param cb
    */
   onPeriod: async function (s, cb) {
+    //if (s.in_preroll) return cb();
+
     // @todo determine periods automatically according to --period
     // if --period=5m then periods has to be 6
     // if --period=2m then periods has to be 15
@@ -134,13 +140,12 @@ module.exports = {
     // It's important to have actual balance here, because it syncs with original crypto exchanger,
     // otherwise we will get the wrong calculation here lib/engine.js:417
     if (s.options.mode === 'live') {
-      //balance.deposit = s.balance.deposit;
-      balance.deposit = s.balance.deposit;
       balance.asset = s.balance.asset;
+      balance.deposit = s.balance.deposit;
     }
 
     // CALCULATE BUY SELL TRIGGER
-    let impulse = analyzer.impulseBought ? { ...analyzer.impulseBought } : null;
+    let impulse = analyzer.impulseBought ? analyzer.impulseBought : null;
 
     // BUY && SELL
     s.signal = null;
@@ -153,6 +158,7 @@ module.exports = {
       analyzer.balance.sellFor(s.period.close, s.options.sell_pct, s);
       analyzer.logToSell(impulse, s);
 
+      await analyzer.terminator.updatePeriod(impulse, { sold: true });
     } else if (await analyzer.canSellDeferred(s)) {
       let deferredImpulse = await analyzer.getSellDeferred(s);
 
@@ -162,7 +168,8 @@ module.exports = {
 
       analyzer.balance.sellFor(s.period.close, s.options.sell_pct, s);
       analyzer.logToSell(deferredImpulse, s);
-      analyzer.terminator.updatePeriod(deferredImpulse, { sold: true });
+
+      await analyzer.terminator.updatePeriod(deferredImpulse, { sold: true });
     } else if (analyzer.canBuy(s)) { // 0.18 <=  0.22 * 0.97
       // Buy Signal
       s.signal = 'buy';
@@ -171,6 +178,8 @@ module.exports = {
 
       analyzer.balance.buyFor(s.period.close, s.options.buy_pct, s);
       await analyzer.logToBuy(s);
+
+      await analyzer.terminator.addPeriod(analyzer.impulseBought);
     }
 
     cb();

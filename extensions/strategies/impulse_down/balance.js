@@ -38,10 +38,11 @@ class Balance {
     return !!this.balance;
   }
 
-  init(balance, options, fee) {
+  init(balance, options, fee, ) {
     if (!this.isInit()) {
       this.balance = balance;
       this.options = options;
+      this.assetIncrement = 0;
       this._fee = fee;
 
       //console.log('\nInit balance: ', this.balance);
@@ -64,10 +65,14 @@ class Balance {
     return fee;
   }
 
-  setAssetIncrement(value) {
-    this.assetIncrement = value;
+  set assetIncrement(value) {
+    this._assetIncrement = value;
 
     return this;
+  }
+
+  get assetIncrement() {
+    return this._assetIncrement;
   }
 
   sellFor(price, pct, s) {
