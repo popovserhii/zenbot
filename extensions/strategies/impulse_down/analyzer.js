@@ -292,7 +292,7 @@ class Analyzer {
 
     // Do not buy if a currency is exhausted
     if (!this.between(this.getPercentToBuy(), [0, 100])) {
-      return false
+      return false;
     }
 
     if (this.detectImpulseDown(s)) {
@@ -387,7 +387,7 @@ class Analyzer {
     //let asset_qty = this.balance.options.fixed_size;
     // retrieve these data automatically
     let fixed = 11;
-    let assetQty = 25;
+    let assetQty = 27;
     //let fixedRate = 100;
     //let asset = assetQty * fixedRate;
     //let basicBalance = asset + (asset * 0.2) // 0.2 means 20%

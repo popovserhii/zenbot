@@ -177,9 +177,10 @@ module.exports = {
       s.options.buy_pct = analyzer.getPercentToBuy();
 
       analyzer.balance.buyFor(s.period.close, s.options.buy_pct, s);
-      await analyzer.logToBuy(s);
-
-      await analyzer.terminator.addPeriod(analyzer.impulseBought);
+      //await analyzer.logToBuy(s);
+      //await analyzer.terminator.addPeriod(analyzer.impulseBought);
+      analyzer.logToBuy(s);
+      analyzer.terminator.addPeriod(analyzer.impulseBought);
     }
 
     cb();
