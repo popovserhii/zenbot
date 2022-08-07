@@ -7,6 +7,7 @@ class Terminator {
   constructor(impulseService) {
     this._impulseService = impulseService;
     this._deferred = null;
+    this._marked = null;
   }
 
   /*get deferred() {
@@ -14,6 +15,26 @@ class Terminator {
       this._deferred = this._impulseService.findDeferredImpulses();
     }
   }*/
+
+  get marked() {
+    return this._marked;
+  }
+
+  /**
+   * Mark period for sale and later in orderExecuted() change the status to "sold"
+   * @param period
+   */
+  markPeriod(period) {
+    this._marked = period;
+
+    return this;
+  }
+
+  resetMarked() {
+    this._marked = null;
+
+    return this;
+  }
 
   async addPeriod(period) {
     period.sold = false

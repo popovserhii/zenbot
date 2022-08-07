@@ -146,6 +146,7 @@ module.exports = {
 
     // CALCULATE BUY SELL TRIGGER
     let impulse = analyzer.impulseBought ? analyzer.impulseBought : null;
+    analyzer.terminator.resetMarked();
 
     // BUY && SELL
     s.signal = null;
@@ -158,7 +159,8 @@ module.exports = {
       analyzer.balance.sellFor(s.period.close, s.options.sell_pct, s);
       analyzer.logToSell(impulse, s);
 
-      await analyzer.terminator.updatePeriod(impulse, { sold: true });
+      //await analyzer.terminator.updatePeriod(impulse, { sold: true });
+      analyzer.terminator.markPeriod(impulse);
     } else if (await analyzer.canSellDeferred(s)) {
       let deferredImpulse = await analyzer.getSellDeferred(s);
 
@@ -169,7 +171,8 @@ module.exports = {
       analyzer.balance.sellFor(s.period.close, s.options.sell_pct, s);
       analyzer.logToSell(deferredImpulse, s);
 
-      await analyzer.terminator.updatePeriod(deferredImpulse, { sold: true });
+      //await analyzer.terminator.updatePeriod(deferredImpulse, { sold: true });
+      analyzer.terminator.markPeriod(deferredImpulse);
     } else if (analyzer.canBuy(s)) { // 0.18 <=  0.22 * 0.97
       // Buy Signal
       s.signal = 'buy';
@@ -186,18 +189,15 @@ module.exports = {
     cb();
   },
 
-  /*orderExecuted: function (s, type, executeSignalCb) {
+  orderExecuted: async function (s, type, cb) {
     if (!s.in_preroll) {
-
-      //let db = s.conf.db.mongo;
-      orderService.save(s.my_trades[s.my_trades.length - 1])
-        .catch(e => {
-          console.error(e);
-        });
-
-      executeSignalCb(type);
+      if ('sell' === type) {
+        await analyzer.terminator.updatePeriod(analyzer.terminator.marked, { sold: true });
+      }
     }
-  },*/
+
+    //cb();
+  },
 
   /**
    * onReport used to display values in terminal for sim.
