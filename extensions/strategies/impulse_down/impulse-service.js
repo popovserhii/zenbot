@@ -13,10 +13,7 @@ class ImpulseService extends DocService {
     return this.mnemo + 's';
   }
 
-  async findDeferredImpulses(selector) {
-    //this.mongo.collection('impulses').createIndex({selector: 1, sold: 1, time: 1});
-    //let impulses = this.getCollection();
-
+  async findDeferredImpulses(selector, status = 'bought') {
     let deferred = await this.mongo.collection(this.cnemo).find({ selector: selector, sold: false }).toArray();
 
     return deferred;

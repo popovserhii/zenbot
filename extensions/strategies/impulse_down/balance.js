@@ -119,7 +119,7 @@ class Balance {
 
 
     if (isNaN(parseFloat(this.balance.asset))) {
-      console.log('\n', this.balance);
+      console.log('##isNan##: \n', this.balance);
     }
 
     this.balance.asset = n(this.balance.asset).add(size).value();

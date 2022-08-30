@@ -46,6 +46,7 @@ class Analyzer {
     this.terminator = terminator;
     this.impulse = null;
     this.impulseBought = null;
+    this.lastSoldOrder = null;
     this.lowest = 0;
   }
 
@@ -96,9 +97,19 @@ class Analyzer {
     let date2 = new Date(milliseconds2);
 
     let diffTime = Math.abs(date2 - date1); // milliseconds
-    let diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    let diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); // date2 - date1 => milliseconds output (1000 * 60 * 60 * 24) => milisecond to day
 
     return diffDays;
+  }
+
+  minutesDiff(milliseconds1, milliseconds2) {
+    let date1 = new Date(milliseconds1);
+    let date2 = new Date(milliseconds2);
+
+    let diffTime = Math.abs(date2 - date1); // milliseconds
+    let diffMinutes = Math.floor(diffTime / (1000 * 60));
+
+    return diffMinutes;
   }
 
   between(number, range) {
@@ -106,6 +117,29 @@ class Analyzer {
     let max = Math.max.apply(Math, range);
     return min <= number && number <= max;
   };
+
+  updateMinMax(s) {
+    // @todo determine periods automatically according to --period
+    // if --period=5m then periods has to be 6
+    // if --period=2m then periods has to be 15
+    // if --period=1m then periods has to be 30
+    //let periods = 30;
+    let periods = s.options.timeframe_periods / parseFloat(s.options.period);
+    let closes = this.lookbackRangeFor(s.lookback, periods);
+
+    //s.period.min = Math.min(...closes);
+    //s.period.max = Math.max(...closes);
+
+    s.period.min = closes[0];
+    s.period.max = closes[0];
+    s.period.furthest = closes[closes.length - 1];
+
+    for (let i = 1, len = closes.length; i < len; i++) {
+      let v = closes[i];
+      s.period.min = (v < s.period.min) ? v : s.period.min;
+      s.period.max = (v > s.period.max) ? v : s.period.max;
+    }
+  }
 
   /**
    * Get range of periods for the last $minutes
@@ -185,8 +219,15 @@ class Analyzer {
       // (New Value – Old value)/Old value
       // !this.impulse.bought потрібно винести у if вище, але якщо це зробити чомусь починається дублювання "BUY at price..."
 
+
+      //let difff = this.percentageDiff(s.period.max, s.period.close);
+      /*if (difff < -2) {
+        console.log(`\n\n MAX: ${s.period.max} | CLOSE: ${s.period.close} | DIFF: ${difff}%`);
+        console.log(`impulse.lowest.close: ${this.impulse.lowest.close} | RISING: ${rising}`);
+      }*/
+
       if (this.impulse.lowest.close > s.period.close) {
-        // Remember the impulse period for the next checking.
+        // Remember the impulse period as the lowest for the next checking.
         this.impulse.lowest = {...s.period};
       //} else if (!this.impulseBought && rising && this.isSmallImpulseDown(s.lookback)) {
       } else if (!this.impulseBought && rising /*&& this.isSmallImpulseDown(s.lookback)*/) {
@@ -210,9 +251,9 @@ class Analyzer {
         && this.percentageDiff(this.impulse.lowest.close, s.period.close) > this.priceNoisePrt
         //&& ((s.period.close - this.impulse.lowest.close) / this.impulse.lowest.close) > PRICE_NOISE
       ) {
-        // The first condition determines if we have several _deferred ImpulseDown.
-        // The second condition determines if we certainly have a new ImpulseDown. It means
-        // the difference between the last purchase and the last ImpulseDown must be more than lower negative value in IMPULSE_DOWN.
+        // The first condition determines if we have several _deferred ImpulseDown one after another.
+        // The second condition determines if we certainly have a new ImpulseDown.
+        // It means the difference between the last purchase and the last ImpulseDown must be more than lower negative value in IMPULSE_DOWN.
         // Or if simplify we must not be in the same price range as the last purchase.
         // The third conditions determines if price has been starting recovering.
 
@@ -231,24 +272,27 @@ class Analyzer {
 
       //} else if (this.impulseBought && this.between((s.period.close - s.period.max) / s.period.max, IMPULSE_DOWN)
       //} else if (this.impulseBought && this.between(this.percentageDiff(s.period.max, s.period.close), IMPULSE_DOWN)
-      } else if (this.impulseBought && this.between(this.percentageDiff(s.period.max, s.period.close), this.impulseRangePrt)
-      ) {
-        // Checking if a new ImpulseDown has happened immediately after the last one,
+      //} else if (this.impulseBought && this.between(this.percentageDiff(s.period.max, s.period.close), this.impulseRangePrt)) {
+      } else if (this.impulseBought && this.between(this.percentageDiff(this.impulseBought.close, s.period.close), this.impulseRangePrt)) {
+        // Checking if a new ImpulseDown has detected immediately after the last one,
         // and we haven't been able to sell the latest purchase.
 
         // Remember the new Impulse for the next checking.
         this.impulse = { lowest: {...s.period} };
+        //this.impulseBought = null;
+
       } else if (this.isMiddleImpulseDown(s)) {
         // We detect the high ImpulseDown for the last hour.
         // Remember the new Impulse for the next checking.
         this.impulse = { lowest: {...s.period} };
       }
 
-      // We're still in the falling down phase, wait the next period
+      // We're still in the falling down phase, wait for the next period
 
     //} else if (this.between((s.period.close - s.period.max) / s.period.max, IMPULSE_DOWN)) { // -0.02 * 100 = -2%
     //} else if (this.between(this.percentageDiff(s.period.max, s.period.close), IMPULSE_DOWN)) { // -0.02 * 100 = -2%
-    } else if (this.between(this.percentageDiff(s.period.max, s.period.close), this.impulseRangePrt)) { // -0.02 * 100 = -2%
+    //} else if (this.between(this.percentageDiff(s.period.max, s.period.close), this.impulseRangePrt)) { // -0.02 * 100 = -2%
+    } else if (this.between(this.percentageDiff(s.period.furthest, s.period.close), this.impulseRangePrt)) { // -0.02 * 100 = -2%
       // (New Value – Old value)/Old value
       // Impulse down detected.
       // Wait the next period to understand current trend and determine if we should buy or wait yet.
@@ -261,7 +305,7 @@ class Analyzer {
     return false;
   }
 
-  async logToBuy(s) {
+  logToBuy(s, order) {
     let latestTrades = [];
     for (let i = s.my_trades.length - 1; i >= 0; i--) {
       let prevTrade = s.my_trades[i];
@@ -273,13 +317,14 @@ class Analyzer {
     }
 
     //let deferredTrades = await this.terminator.getDeferredTrades(s.options.selector.normalized);
-    //let numberOfImpulse = deferredTrades.length ? deferredTrades.length + 1 : 1;
-    let numberOfImpulse = latestTrades.length ? latestTrades.length + 1 : 1;
+    //let numberOfImpulse = latestTrades.length ? latestTrades.length + 1 : 1;
+    let numberOfImpulse = latestTrades.length;
 
     let risingPercent = this.percentageDiff(s.period.min, s.period.close);
-    let impulseDown = ((this.impulse.lowest.close - s.period.max) / s.period.max);
+    ////let impulseDown = ((this.impulse.lowest.close - s.period.max) / s.period.max);
+    let impulseDown = ((s.period.min - s.period.max) / s.period.max);
     //console.log(`\nBROUGHT: ${this.impulse.bought.close} | BOOL: ${this.impulse.bought}. We mustn't come here twice`);
-    console.log(`\nBUY #${numberOfImpulse} at price: ${s.period.close} | LOW: ${this.impulse.lowest.close} | MAX: ${s.period.max} | ImpulseDown: ${(impulseDown).toFixed(3)} | ImpulseDown %: ${(impulseDown * 100).toFixed(2)}% | BUY AT: ${new Date(s.period.close_time).toISOString()}`);
+    console.log(`\nBUY #${numberOfImpulse} | ORDER: ${order.order_id} | At price: ${s.period.close} | ImpulseDown: ${(impulseDown).toFixed(3)} | ImpulseDown %: ${(impulseDown * 100).toFixed(2)}% | BUY AT: ${new Date(s.period.close_time).toISOString()}`);
     console.log(`CLOSE: ${s.period.close} | MIN: ${s.period.min} | MAX: ${s.period.max} | LOW: ${s.period.low} | HIGH: ${s.period.high}`);
     console.log(`RISING %: ${risingPercent.toFixed(2)} | $: ${this.balance.deposit} | COINS: ${this.balance.asset}`);
   }
@@ -306,7 +351,7 @@ class Analyzer {
 
     this.lowest = (this.lowest == 0 || this.lowest > this.balance.deposit) ? this.balance.deposit : this.lowest;
     let profit = ((s.period.close - impulse.close) / impulse.close);
-    console.log(`\nSOLD at price: ${s.period.close} | BOUGHT: ${impulse.close} | Profit: ${(profit).toFixed(4)} | Profit %: ${(profit * 100).toFixed(2)}% | SELL AT:${new Date(s.period.close_time).toISOString()}`);
+    console.log(`\nSOLD ORDER: ${impulse.order_id} | At price: ${s.period.close} | BOUGHT: ${impulse.close} | Profit: ${(profit).toFixed(4)} | Profit %: ${(profit * 100).toFixed(2)}% | SELL AT:${new Date(s.period.close_time).toISOString()}`);
     console.log(`CLOSE: ${s.period.close} | MIN: ${s.period.min} | MAX: ${s.period.max} | LOW: ${s.period.low} | HIGH: ${s.period.high}`);
     console.log(`RISING %: ${risingPercent.toFixed(2)} | $: ${this.balance.deposit} | COINS: ${this.balance.asset} | LOWEST: ${this.lowest}`);
   }
@@ -335,20 +380,24 @@ class Analyzer {
     return false;
   }
 
-  async canSellDeferred(s) {
-    let deferredImpulse = await this.getSellDeferred(s);
-    if (deferredImpulse) {
-      // Remove last bought impulse since we're going to sell it.
-      if (this.impulseBought && this.impulseBought.time === deferredImpulse.time) {
-        this.impulse = null;
-        this.impulseBought = null;
-      }
+  async canSellDeferred(s, period) {
+    let deferred = await this.getSellDeferred(s, period);
+    if (deferred) {
+      /*if (this.impulseBought) {
+        let minutesDiff = this.minutesDiff(this.impulseBought.time, deferred.time);
+        // Remove last bought impulse since we're going to sell it.
+        //if (this.impulseBought && this.impulseBought.time === deferredImpulse.time) {
+        if (minutesDiff === parseInt(s.options.period)) {
+          this.impulse = null;
+          this.impulseBought = null;
+        }
+      }*/
 
-      return deferredImpulse;
+      return deferred;
     }
   }
 
-  async getSellDeferred(s) {
+  async getSellDeferred(s, period) {
     if (s.in_preroll) {
       return false;
     }
@@ -356,22 +405,44 @@ class Analyzer {
     let deferred = null;
     //let trades = this.terminator.getDeferredTrades(s.my_trades);
     let trades = await this.terminator.getDeferredTrades(s.options.selector.normalized);
+
     for (const trade of trades) {
       // @todo Match fields in trade and s.period
-      let pctDiff = this.percentageDiff(trade.close, s.period.close);
-      let daysDiff = this.daysDiff(trade.close_time, s.period.close_time);
+      //let pctDiff = this.percentageDiff(trade.close, period.orig_close);
+      let sizePctDiff = this.percentageDiff(trade.size, period.orig_size);
+      let pricePctDiff = this.percentageDiff(trade.close, period.close);
+      let daysDiff = this.daysDiff(trade.close_time, period.close_time);
 
       switch (true) {
-        case ((daysDiff <= 7) && pctDiff > this.priceRisePrt): // difference 7 days, price increased up to 0.5%
-        case ((daysDiff <= (7 * 2)) && pctDiff >= 1): // difference 2 weeks, price increased up to 1%
-        case ((daysDiff <= (7 * 48)) && pctDiff >= 5): // difference 48 weeks, price increased up to 15%
-        case ((daysDiff >= (7 * 48)) && pctDiff >= 10): // difference 48+ weeks, price increased up to 20%
+        case ((daysDiff <= 7) && pricePctDiff > this.priceRisePrt /*&& sizePctDiff <= 0.5*/): // difference 7 days, price increased up to 0.5%
+        case ((daysDiff <= (7 * 2)) && pricePctDiff >= 1): // difference 2 weeks, price increased up to 1%
+        case ((daysDiff <= (7 * 48)) && pricePctDiff >= 5): // difference 48 weeks, price increased up to 5%
+        case ((daysDiff >= (7 * 48)) && pricePctDiff >= 10): // difference 48+ weeks, price increased up to 10%
           deferred = trade;
           break;
       }
 
       // Stop further looping, because we can work only with one trade per time
       if (deferred) {
+        break;
+      }
+    }
+
+    return deferred;
+  }
+
+  getSellingDeferred(s, period) {
+    /*if (s.in_preroll) {
+      return false;
+    }*/
+
+    let deferred = null;
+    let trades = this.terminator.getDeferredTradesFromMemory(s.options.selector.normalized);
+
+    for (const trade of trades) {
+      let minutesDiff = this.minutesDiff(trade.update_time, period.close_time);
+      if (minutesDiff <= parseInt(s.options.period)) {
+        deferred = trade;
         break;
       }
     }
@@ -387,7 +458,7 @@ class Analyzer {
     //let asset_qty = this.balance.options.fixed_size;
     // retrieve these data automatically
     let fixed = 11;
-    let assetQty = 27;
+    let assetQty = 29;
     //let fixedRate = 100;
     //let asset = assetQty * fixedRate;
     //let basicBalance = asset + (asset * 0.2) // 0.2 means 20%
@@ -409,6 +480,33 @@ class Analyzer {
     }
 
     return pct;
+  }
+
+  setLastSoldOrder(order) {
+    this.lastSoldOrder = order;
+
+    return this;
+  }
+
+  memorizeRetainedAsset(order) {
+    this.retainedAsset = this.retainedAsset + (order.size - order.sold_size);
+
+    return this;
+  }
+
+  reassignRetainedAsset(order) {
+    if (this.lastSoldOrder) {
+      order.size = n(order.size).add(this.lastSoldOrder.size - this.lastSoldOrder.sold_size).value();
+    }
+    //order.size = n(order.size).add(this.retainedAsset).format('0.00000000');
+    //order.size = n(order.orig_size).add(this.retainedAsset).subtract(this.balance.computeFee(this.retainedAsset)).value();
+    //order.size = n(order.orig_size).add(this.retainedAsset - this.balance.computeFee(this.retainedAsset)).value();
+
+    //this.balance.deposit = this.balance.deposit - n(total).add(this.balance.computeFee(total)).value();
+
+    //order.size = n(order.size).value();
+
+    return this;
   }
 
 }

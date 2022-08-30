@@ -39,6 +39,8 @@ module.exports = {
 
     console.log('Impulse Down strategy 2022-02-22 - GONNA MAKE U RICH BABY!')
 
+    analyzer.inc = 0;
+
     /* Universal */
     this.option('period', 'period length, same as --period_length', String, '1m')
     this.option('period_length', 'period length, same as --period', String, '1m')
@@ -79,9 +81,9 @@ module.exports = {
       balance.deposit = s.options.deposit;
       //await analyzer.actualizeBalance(s.options.selector.normalized);
 
-      s.asset_capital = s.balance.asset
-      let deposit = s.options.deposit ? Math.max(0, n(s.options.deposit).subtract(s.asset_capital)) : s.balance.currency // zero on negative
-      s.balance.deposit = n(deposit < s.balance.currency ? deposit : s.balance.currency).value()
+      s.asset_capital = s.balance.asset;
+      let deposit = s.options.deposit ? Math.max(0, n(s.options.deposit).subtract(s.asset_capital)) : s.balance.currency; // zero on negative
+      s.balance.deposit = n(deposit < s.balance.currency ? deposit : s.balance.currency).value();
     }
   },
 
@@ -117,25 +119,7 @@ module.exports = {
   onPeriod: async function (s, cb) {
     //if (s.in_preroll) return cb();
 
-    // @todo determine periods automatically according to --period
-    // if --period=5m then periods has to be 6
-    // if --period=2m then periods has to be 15
-    // if --period=1m then periods has to be 30
-    //let periods = 30;
-    let periods = s.options.timeframe_periods / parseFloat(s.options.period);
-    let closes = analyzer.lookbackRangeFor(s.lookback, periods);
-
-    //s.period.min = Math.min(...closes);
-    //s.period.max = Math.max(...closes);
-
-    s.period.min = closes[0];
-    s.period.max = closes[0];
-
-    for (let i = 1, len = closes.length; i < len; i++) {
-      let v = closes[i];
-      s.period.min = (v < s.period.min) ? v : s.period.min;
-      s.period.max = (v > s.period.max) ? v : s.period.max;
-    }
+   analyzer.updateMinMax(s);
 
     // It's important to have actual balance here, because it syncs with original crypto exchanger,
     // otherwise we will get the wrong calculation here lib/engine.js:417
@@ -146,54 +130,108 @@ module.exports = {
 
     // CALCULATE BUY SELL TRIGGER
     let impulse = analyzer.impulseBought ? analyzer.impulseBought : null;
-    analyzer.terminator.resetMarked();
+    //analyzer.terminator.resetMarked();
+
+    //s.period.orig_close = s.period.close;
+
+    analyzer.inc++;
 
     // BUY && SELL
     s.signal = null;
-    if (analyzer.canSell(s)) {
+    /*if (analyzer.canSell(s)) {
       // Sell Signal
       s.signal = 'sell';
       s.options.sell_pct = analyzer.getPercentToSell(impulse);
-      //s.options.sell_pct = analyzer.getPercentToSell({size: 173});
 
-      analyzer.balance.sellFor(s.period.close, s.options.sell_pct, s);
-      analyzer.logToSell(impulse, s);
+      ////analyzer.balance.sellFor(s.period.close, s.options.sell_pct, s);
+      ////analyzer.logToSell(impulse, s);
 
-      //await analyzer.terminator.updatePeriod(impulse, { sold: true });
-      analyzer.terminator.markPeriod(impulse);
-    } else if (await analyzer.canSellDeferred(s)) {
-      let deferredImpulse = await analyzer.getSellDeferred(s);
+      ////await analyzer.terminator.updatePeriod(impulse, { sold: true });
+      //analyzer.terminator.markPeriod(impulse);
+    } else */if (await analyzer.canSellDeferred(s, s.period)) {
+      let deferred = await analyzer.getSellDeferred(s, s.period);
+
+      analyzer.reassignRetainedAsset(deferred);
+
+      await analyzer.terminator.updatePeriod(deferred, { status: 'selling' });
 
       // Sell Signal
       s.signal = 'sell';
-      s.options.sell_pct = analyzer.getPercentToSell(deferredImpulse);
+      s.options.sell_pct = analyzer.getPercentToSell(deferred);
 
-      analyzer.balance.sellFor(s.period.close, s.options.sell_pct, s);
-      analyzer.logToSell(deferredImpulse, s);
 
-      //await analyzer.terminator.updatePeriod(deferredImpulse, { sold: true });
-      analyzer.terminator.markPeriod(deferredImpulse);
+      ////analyzer.balance.sellFor(s.period.close, s.options.sell_pct, s);
+      ////analyzer.logToSell(deferredImpulse, s);
+      ////await analyzer.terminator.updatePeriod(deferredImpulse, { sold: true });
+
+      //analyzer.terminator.markPeriod(deferredImpulse);
     } else if (analyzer.canBuy(s)) { // 0.18 <=  0.22 * 0.97
       // Buy Signal
       s.signal = 'buy';
       // Don't change s.balance.currency to any new value. Here we correct value in 'trade' mode
       s.options.buy_pct = analyzer.getPercentToBuy();
 
-      analyzer.balance.buyFor(s.period.close, s.options.buy_pct, s);
-      //await analyzer.logToBuy(s);
-      //await analyzer.terminator.addPeriod(analyzer.impulseBought);
-      analyzer.logToBuy(s);
-      analyzer.terminator.addPeriod(analyzer.impulseBought);
+      // We've sent "buy" signal, hence we are not interested in this anymore and should begin from a scratch to try catch a new impulse.
+      //analyzer.impulse = null;
+      //analyzer.impulseBought = null;
+
+      //analyzer.balance.buyFor(s.period.close, s.options.buy_pct, s);
+      //analyzer.logToBuy(s);
+      //analyzer.terminator.addPeriod(analyzer.impulseBought);
     }
 
     cb();
   },
 
-  orderExecuted: async function (s, type, cb) {
+  orderExecuted: async function (s, order, type, cb) {
     if (!s.in_preroll) {
-      if ('sell' === type) {
-        await analyzer.terminator.updatePeriod(analyzer.terminator.marked, { sold: true });
+
+      analyzer.updateMinMax(s);
+
+      if ('buy' === type) {
+        //
+        //analyzer.impulseBought.size = order.size;
+        //analyzer.impulseBought.close = order.price;
+        order.close = order.price;
+        order.close_time = order.time;
+        order.selector = s.options.selector.normalized;
+        order.status = 'bought';
+
+        analyzer.balance.buyFor(order.price, s.options.buy_pct, s);
+        analyzer.logToBuy(s, order);
+
+        //await analyzer.terminator.addPeriod(analyzer.impulseBought);
+        await analyzer.terminator.addPeriod(order);
+      } else if ('sell' === type) {
+
+        analyzer.impulse = null;
+        analyzer.impulseBought = null;
+
+        order.close = order.orig_price;
+        order.close_time = order.orig_time;
+        order.selector = s.options.selector.normalized;
+
+        //let deferred = await analyzer.getSellDeferred(s, order, 'selling');
+        let deferred = analyzer.getSellingDeferred(s, order);
+
+        deferred.sold_size = order.size;
+
+        analyzer.balance.sellFor(order.close, s.options.sell_pct, s);
+        analyzer.logToSell(deferred, s);
+
+        // @todo Пропрацювати момент коли продавали 20 монет, але продалось лише 5.
+        // Потрібно відняти 20 - 5 і позначати impulse як не проданий (sold = false)
+        //let sum = order.price * order.size;
+        //if (sum) {
+         await analyzer.terminator.updatePeriod(deferred, { sold: true, sold_size: order.size, status: 'sold'});
+
+
+         //analyzer.memorizeRetainedAsset(deferred);
+         analyzer.setLastSoldOrder(deferred);
+        //}
+        //s.period.close = origClose;
       }
+
     }
 
     //cb();

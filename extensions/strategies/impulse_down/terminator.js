@@ -39,15 +39,22 @@ class Terminator {
   async addPeriod(period) {
     period.sold = false
     period.close_datetime = new Date(period.close_time).toISOString();
-    this._deferred.unshift(period);
+
     await this._impulseService.insert(period);
+    // It's important to have it after 'await', otherwise we can get stack with zombi orders in the database.
+    this._deferred.unshift(period);
 
     return this;
   }
 
-  updatePeriod(period, partial) {
+  async updatePeriod(period, partial) {
+    let updated = new Date();
+    partial.update_datetime = updated.toISOString();
+    partial.update_time = updated.getTime();
     _.merge(period, partial);
-    this._impulseService.update(partial, { _id: period._id });
+
+    //await this._impulseService.update(partial, { order_id: period.order_id });
+    await this._impulseService.update(partial, { _id: period._id });
 
     return this;
   }
@@ -76,6 +83,13 @@ class Terminator {
       this._deferred = await this._impulseService.findDeferredImpulses(selector);
     }
 
+    /*return this.getDeferredTradesFromMemory(selector).filter((period, index) => {
+      return period.status === status;
+    });*/
+    return this.getDeferredTradesFromMemory(selector);
+  }
+
+  getDeferredTradesFromMemory(selector) {
     return this._deferred = this._deferred.filter((period, index) => {
       return period.selector === selector && period.sold === false;
     });
